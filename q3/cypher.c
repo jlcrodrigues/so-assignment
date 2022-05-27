@@ -7,8 +7,6 @@
 #include <fcntl.h>
 #include <ctype.h>
 
-//#include "hash_table.h"
-
 #define READ_END 0
 #define WRITE_END 1
 #define LINESIZE 256
@@ -87,7 +85,7 @@ int main(int argc, char *argv[])
       size += nbytes;
     }
     close(fd_raw[READ_END]);
-    buff[size - 1] = '\0';
+    buff[size] = '\0';
 
     /* get the cypher */
     FILE *cypher_file;
@@ -123,59 +121,32 @@ int main(int argc, char *argv[])
     if (line_in)
       free(line_in);
 
-    /*hash_table_table * cypher = hash_table_new();
-
-    for (int i = 0; i < cypher_number; i++)
-    {
-      hash_table_insert(cypher, cypher1[i], cypher2[i]);
-      hash_table_insert(cypher, cypher2[i], cypher1[i]);
-    }*/
-
-    //free(cypher1);
-    //free(cypher2);
-
-    char *word = strtok(buff, " ");
-    char *filter = (char *)malloc(LINESIZE * sizeof(char));
-    char* punctuation = (char *)malloc(10 * sizeof(char));
-    while (word != NULL)
-    {
-      int punc_index = 0;
-      punctuation[0] = '\0';
-      while (!isalpha(word[strlen(word) - 1 - punc_index])) {
-        punctuation[punc_index] = word[strlen(word) - 1 - punc_index];
-        ++punc_index;
-      }
-      punctuation[punc_index] = '\0';
-      word[strlen(word) - punc_index] = '\0';
-
-      int found = 0;
-      for (int i = 0; i < cypher_number && !found; i++) {
-        if (strcmp(word, cypher1[i]) == 0) {
-          strcpy(filter, cypher2[i]);
-          found = 1;
+    /* filter the text */
+    int buff_i = 0;
+    char *word = (char *)malloc(LINESIZE * sizeof(char));
+    word[0] = '\0';
+    while (buff[buff_i] != '\0') {
+      if (!isalpha(buff[buff_i]) || buff[buff_i + 1] == '\0') {
+        int found = 0;
+        for (int i = 0; i < cypher_number && !found; i++) {
+          if (strcmp(cypher1[i], word) == 0) {
+            strcat(buff_filtered, cypher2[i]);
+            found = 1;
+          } 
+          if (strcmp(cypher2[i], word) == 0) {
+            strcat(buff_filtered, cypher1[i]);
+            found = 1;
+          } 
         }
-        if (strcmp(word, cypher2[i]) == 0) {
-          strcpy(filter, cypher1[i]);
-          found = 1;
-        }
-      }
-
-      if (found) {
-        for (int i = strlen(punctuation) - 1; i >= 0; i--) 
-          strncat(filter, &punctuation[i], 1);
-        strcat(buff_filtered, filter);
+        if (!found) strcat(buff_filtered, word);
+        strncat(buff_filtered, &buff[buff_i], 1);
+        word[0] = '\0';
       }
       else {
-        for (int i = strlen(punctuation) - 1; i >= 0; i--) {
-          strncat(word, &punctuation[i], 1);
-        }
-        strcat(buff_filtered, word);
+        strncat(word, &buff[buff_i], 1);
       }
-
-      strcat(buff_filtered, " ");
-      word = strtok(NULL, " ");
+      buff_i++;
     }
-    strcat(buff_filtered, "\n");
 
     /* send filtered text */
     close(fd_filtered[READ_END]);

@@ -1,7 +1,7 @@
 CC = gcc
 CFLAGS  = -Wall
 TARGET = cypher
-SRCS = cypher.c
+SRCS = cypher.c 
 
 all: $(TARGET)
 
