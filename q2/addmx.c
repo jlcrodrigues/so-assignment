@@ -22,8 +22,16 @@ matrixinfo createMatrix (char* infile){
   char* str = NULL;
   getline(&str, &str_size, fp);
   matrixinfo matrixinfo;
+  if(str[1]!='x'){
+    perror("invalid matrix");
+    exit(EXIT_FAILURE);
+  }
   matrixinfo.n = atoi(&str[0]);
   matrixinfo.m = atoi(&str[2]);
+  if(matrixinfo.n == 0 || matrixinfo.m == 0){
+    perror("invalid size");
+    exit(EXIT_FAILURE);
+  }
   matrixinfo.size = matrixinfo.n*matrixinfo.m;
   matrixinfo.matrix = (int*)malloc(matrixinfo.size*sizeof(int));
   int i = 0, j = 0;
@@ -42,7 +50,10 @@ matrixinfo createMatrix (char* infile){
 }
 
 int main(int argc, char *argv[]) {
-  
+  if(argc!= 3){
+    perror("Wrong amount of matrix");
+    exit(EXIT_FAILURE);
+  }
   char* infile1 = argv[1];
   char* infile2 = argv[2];
   matrixinfo matrixinfo1= createMatrix(infile1);
