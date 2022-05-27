@@ -5,6 +5,7 @@
 #include <sys/mman.h>
 #include <sys/wait.h>
 
+//Struct with informations about the matrix and the matrix itself
 typedef struct matrixInfo{
     int n;
     int m;
@@ -12,6 +13,7 @@ typedef struct matrixInfo{
     int * matrix;
 } matrixinfo;
 
+//Function to create the struct with matrix from the inputted file
 matrixinfo createMatrix (char* infile){
   FILE *fp;
   if((fp = fopen(infile,"r")) == NULL){
@@ -28,6 +30,8 @@ matrixinfo createMatrix (char* infile){
   }
   matrixinfo.n = atoi(&str[0]);
   matrixinfo.m = atoi(&str[2]);
+
+//Checks if size of matrix is invalid
   if(matrixinfo.n == 0 || matrixinfo.m == 0){
     perror("invalid size");
     exit(EXIT_FAILURE);
@@ -58,11 +62,14 @@ int main(int argc, char *argv[]) {
   char* infile2 = argv[2];
   matrixinfo matrixinfo1= createMatrix(infile1);
   matrixinfo matrixinfo2= createMatrix(infile2);
+
+//Confirms that both matrixes have the same dimensions
   if (matrixinfo1.size!=matrixinfo2.size){
       perror("Matrix with different sizes");
       exit(EXIT_FAILURE);
   }
 
+//Memory share for the final matrix
   int *final_matrix = mmap(NULL, matrixinfo1.size*sizeof(int), PROT_READ|PROT_WRITE,MAP_SHARED|MAP_ANONYMOUS, 0, 0);
     if(final_matrix == MAP_FAILED){
         perror("mmap");
@@ -71,6 +78,8 @@ int main(int argc, char *argv[]) {
   for(int i = 0; i < matrixinfo1.size; i++) {
       final_matrix[i] = 0;
   }
+
+//Creates a process for each column
   for(int j = 0; j < matrixinfo1.m; j++) {
     pid_t pid;
     if ((pid = fork()) < 0) {
@@ -92,7 +101,9 @@ int main(int argc, char *argv[]) {
       exit(EXIT_FAILURE);
     }
   }
-  printf("%dx%d\n",matrixinfo1.n,matrixinfo1.m);
+
+//Creates the matrix for stdout 
+  printf("%dx%d\n",matrixinfo1.n,matrixinfo1.m);  
   for (int i=0; i < matrixinfo1.n;i++){
     for(int j=0; j<matrixinfo1.m;j++){
       printf("%d ", *(final_matrix+(i*matrixinfo1.m)+j));
