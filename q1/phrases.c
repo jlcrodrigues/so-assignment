@@ -27,12 +27,12 @@ int main(int argc, char* argv[]) {
         exit(EXIT_FAILURE); 
     }
 
-
+    /* Handle empty files */
     int size;
     fseek (file, 0, SEEK_END);
     size = ftell(file);
     if (0 == size) {
-        printf("file is empty\n");
+        printf("File is empty!\n");
         return EXIT_FAILURE;
     }
     rewind(file);
@@ -58,7 +58,7 @@ int main(int argc, char* argv[]) {
         }
     }
 
-    if (i != 0) {  // if last phrase doesn't end with pontuaction
+    if (i != 0) {  // if last phrase doesn't end with punctuation
         line++;
         buffer[i--] = '\0';  // 'i--' because i has to be behind end of file
         if (l) {
